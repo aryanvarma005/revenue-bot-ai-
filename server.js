@@ -13,12 +13,13 @@ if (!WHATSAPP_TOKEN || !VERIFY_TOKEN || !PHONE_NUMBER_ID || !GEMINI_API_KEY) {
   console.error("❌ Missing environment variables");
 }
 
-// Gemini init
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-
+// ----------------- GEMINI INIT (ONLY ONCE) -----------------
 let model = null;
+
 try {
- model = genAI.getGenerativeModel({ model: "gemini-1.5 flash" });
+  const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+  model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  console.log("✅ Gemini model loaded successfully!");
 } catch (err) {
   console.error("❌ Gemini Init Error:", err);
 }
@@ -45,7 +46,7 @@ async function sendWhatsAppMessage(to, text) {
 
     const payload = {
       messaging_product: "whatsapp",
-      to,
+      to: to,
       text: { body: text }
     };
 
@@ -91,9 +92,8 @@ app.post("/webhook", async (req, res) => {
 
     console.log("💬 Incoming:", from, text);
 
-    // AI Generate Answer
     const aiResponse = await askGemini(
-      `You are REVENUE BOT AI. Explain clearly and simply:\n\nQ: ${text}`
+      `You are REVENUE BOT AI. Explain clearly:\n\nQuestion: ${text}`
     );
 
     await sendWhatsAppMessage(from, aiResponse);
@@ -111,7 +111,7 @@ app.get("/", (req, res) => {
 });
 
 // -------------------- START SERVER --------------------
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log("🚀 Server running on port", PORT);
 });
