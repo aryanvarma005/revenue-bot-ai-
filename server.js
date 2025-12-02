@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const axios = require("axios");
@@ -18,7 +19,8 @@ let model;
 
 try {
   const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-  model = genAI.getGenerativeModel({ model: "Gemini 2.5 Pro" });
+  model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+;
   console.log("✅ Gemini model loaded successfully!");
 } catch (err) {
   console.error("❌ Gemini Init Error:", err);
@@ -32,10 +34,12 @@ app.use(bodyParser.json());
 async function askGemini(prompt) {
   try {
     const result = await model.generateContent(prompt);
-    return result.response.text();
+    const response = result.response;
+    const text = await response.text();
+    return text;
   } catch (err) {
-    console.error("🔥 Gemini Error:", err);
-    return "⚠ AI is currently unavailable. Try again!";
+    console.error("🔥 Gemini Error:", err.response?.data || err);
+    return "⚠ Gemini AI error! Please try again.";
   }
 }
 
