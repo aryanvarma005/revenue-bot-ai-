@@ -97,9 +97,30 @@ app.post("/webhook", async (req, res) => {
 
     console.log("💬 Incoming:", from, userMsg);
 
-    const reply = await askGemini(
-      `You are REVENUE BOT AI. Give helpful and simple answers.\nUser: ${userMsg}`
-    );
+   async function askGemini(userMsg) {
+  try {
+    const prompt = `
+You are REVENUE BOT AI.
+Speak in friendly Hinglish with a casual, human tone.
+Avoid robotic phrases like "Hi there, how can I assist".
+Use words like "bhai", "scene", "simple baat", "aisa kar".
+
+Always reply short, clear, and helpful.
+
+User message: "${userMsg}"
+Reply:
+`;
+
+    const result = await model.generateContent({
+      contents: [{ role: "user", parts: [{ text: prompt }] }]
+    });
+
+    return result.response.text();
+  } catch (err) {
+    console.error("🔥 Gemini Error:", err);
+    return "⚠ Gemini AI error! Please try again.";
+  }
+}
 
     await sendWhatsAppMessage(from, reply);
 
